@@ -12,9 +12,6 @@
 #include <Adafruit_MQTT_Client.h>
 #include "config.h"
 
-//#define IO_USERNAME  "valefleur"
-//#define IO_KEY       "306f566fba684e78b9bf082961c92bfa"
-
 // Some code borrowed from Feather HUZZAH examples, some from ladyada
 
 #define DHTPIN 12         // Digital pin connected to the DHT sensor
@@ -25,35 +22,14 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // set up the humidity feed
 AdafruitIO_Feed *humidityFeed = io.feed("HuzzahHumidity");
-// set up the farenheit feed
+// set up the fahrenheit feed
 AdafruitIO_Feed *farEndHeightFeed = io.feed("FantasticFarenheit");
-
-// Set up wifi data
-//const char* ssid     = "WWCode";
-//const char* password = "Hopper Lovelace Borg";
-//const char* host = "wifitest.adafruit.com";
 
 void setup() {
   Serial.begin(9600);     // Set up console logging  
   while(! Serial);        // Wait for serial monitor to open
   
   pinMode(0, OUTPUT);     // Pin 0 is red LED for heartbeat
-
-  // Connect to wifi
-//  Serial.print("Connecting to ");
-//  Serial.println(ssid);
-  
-//  WiFi.begin(ssid, password);
-  
-//  while (WiFi.status() != WL_CONNECTED) {
-//    delay(500);
-//    Serial.print(".");
-//  }
-
-//  Serial.println("");
-//  Serial.println("WiFi connected");  
-//  Serial.println("IP address: ");
-//  Serial.println(WiFi.localIP());
 
   // connect to io.adafruit.com
   Serial.print("Connecting to Adafruit IO");
@@ -75,13 +51,9 @@ void setup() {
 }
 
 void loop() {
-  // Beat the heart, then take a sensor reading
-
-  //Heartbeat
+  // Turn on heartbeat LED when collecting sensor data
   digitalWrite(0, HIGH);  // heartbeat on
   delay(500);             // wait 500 ms
-  digitalWrite(0, LOW);   // heartbeat off
-  delay(500);
 
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
@@ -106,6 +78,10 @@ void loop() {
   Serial.println(F("%"));
   Serial.print(F("Temperature: "));
   Serial.println(fahrenheit);  
+
+  // Turn off heartbeat LED when sending data to cloud
+  digitalWrite(0, LOW);   // heartbeat off
+  delay(500);
 
   // Log data to cloud
   Serial.print("sending humidity -> ");
