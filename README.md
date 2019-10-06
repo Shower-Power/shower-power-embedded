@@ -9,3 +9,7 @@ The purpose of this project is to help the individual minimize their environment
 
 ## Deployed: 
 https://shower-power-frontend.herokuapp.com/
+
+
+## Aidafruit IO Dashboard: 
+https://io.adafruit.com/valefleur/dashboards/power-shower
