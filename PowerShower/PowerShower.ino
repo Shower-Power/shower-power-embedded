@@ -6,7 +6,6 @@
 #include <ArduinoHttpClient.h>
 #include <DHT.h>          // Library for DHT22 Humidity/Temp sensor
 #include <DHT_U.h>        // Another library for DHT22 sensor
-//#include <ESP8266WiFi.h>  // Wifi library for Feather HUZZAH
 
 #include <Adafruit_MQTT.h>
 #include <Adafruit_MQTT_Client.h>
@@ -20,6 +19,12 @@
 // Initialize DHT sensor.
 DHT dht(DHTPIN, DHTTYPE);
 
+// digital pin 5
+#define LED_PIN 5
+
+// set up the 'digital' feed
+AdafruitIO_Feed *digital = io.feed("DigitalShower");
+
 // set up the humidity feed
 AdafruitIO_Feed *humidityFeed = io.feed("HuzzahHumidity");
 // set up the fahrenheit feed
@@ -30,7 +35,8 @@ void setup() {
   while(! Serial);        // Wait for serial monitor to open
   
   pinMode(0, OUTPUT);     // Pin 0 is red LED for heartbeat
-
+  pinMode(LED_PIN, OUTPUT); // Pin 5 is the Shower On/Off indicator LED
+  
   // connect to io.adafruit.com
   Serial.print("Connecting to Adafruit IO");
   io.connect();
@@ -41,16 +47,31 @@ void setup() {
     delay(500);
   }
 
+  // set up a message handler for the 'digital' feed.
+  // the handleMessage function (defined below)
+  // will be called whenever a message is
+  // received from adafruit io.
+  digital->onMessage(handleMessage);
+
   // we are connected
   Serial.println();
   Serial.println(io.statusText());
-  
+
+  digital->get();
+    
   // Start sensor
   Serial.println(F("DHT22 starting!"));
   dht.begin();
+  
 }
 
 void loop() {
+  // io.run(); is required for all sketches.
+  // it should always be present at the top of your loop
+  // function. it keeps the client connected to
+  // io.adafruit.com, and processes any incoming data.
+  io.run();
+  
   // Turn on heartbeat LED when collecting sensor data
   digitalWrite(0, HIGH);  // heartbeat on
   delay(500);             // wait 500 ms
@@ -94,5 +115,22 @@ void loop() {
   Serial.println();
 
   // Don't overload the cloud; avoid being throttled
-  delay(3000);
+  delay(3500);
+}
+
+
+// this function is called whenever an 'digital' feed message
+// is received from Adafruit IO. it was attached to
+// the 'digital' feed in the setup() function above.
+void handleMessage(AdafruitIO_Data *data) {
+
+  Serial.print("Shower toggle received <- ");
+
+  if(data->toPinLevel() == HIGH)
+    Serial.println("HIGH");
+  else
+    Serial.println("LOW");
+
+
+  digitalWrite(LED_PIN, data->toPinLevel());
 }
